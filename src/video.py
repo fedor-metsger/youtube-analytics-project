@@ -1,6 +1,7 @@
 
 import json
 import os
+import isodate
 from googleapiclient.discovery import build
 
 
@@ -15,7 +16,7 @@ class Video:
 
     def __init__(self, id):
         self.id = id
-        self.url = f"https://www.youtube.com/watch?v={id}"
+        self.url = f"https://youtu.be/{id}"
 
         self.api_key: str = os.getenv('YT_API_KEY')
         youtube = Video.get_service()
@@ -23,9 +24,11 @@ class Video:
                                                id=id).execute()
         # printj(video_response)
         self.title = video_response['items'][0]['snippet']['title']
-        self.view_count = video_response['items'][0]['statistics']['viewCount']
-        self.like_count = video_response['items'][0]['statistics']['likeCount']
-        comment_count: int = video_response['items'][0]['statistics']['commentCount']
+        self.iso_8601_duration = video_response['items'][0]['contentDetails']['duration']
+        self.duration = isodate.parse_duration(self.iso_8601_duration)
+        self.view_count = int(video_response['items'][0]['statistics']['viewCount'])
+        self.like_count = int(video_response['items'][0]['statistics']['likeCount'])
+        comment_count: int = int(video_response['items'][0]['statistics']['commentCount'])
 
     def __str__(self):
         return f"{self.title}"
